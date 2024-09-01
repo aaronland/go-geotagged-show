@@ -1,0 +1,22 @@
+body {
+	margin: 0px;
+}
+
+#main {
+}
+
+#map {
+	height: 100vh;
+	width: 100%;
+}
+
+.geotagged-photo {
+	display:block;
+	min-width:200px;
+	max-width:200px;
+	max-height:200px;
+}
+
+.leaflet-popup-content {
+	// width: auto !Important;
+}
