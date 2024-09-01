@@ -76,7 +76,7 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 	
 	switch count_geotagged {
 	case 0:
-		return fmt.Errorf("No geotagged photos to crawl")
+		return fmt.Errorf("No geotagged photo sources to crawl")
 	case 1:
 		geotagged_fs = opts.GeotaggedPhotos[0]
 	default:
