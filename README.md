@@ -4,7 +4,7 @@ Command-line tool for showing geotagged photos on a map from an on-demand web se
 
 ## Motivation
 
-It's basically a simpler and dumber version of [geojson.io](https://geojson.io/) but for a folder of geotagged photos (specifically photos with GPS EXFI tags) that you can run locally from a single binary application. Also, the option for custom, local and private tile data.
+It's basically a simpler and dumber version of [geojson.io](https://geojson.io/) but for a folder of geotagged photos (specifically photos with GPS EXIF tags) that you can run locally from a single binary application. Also, the option for custom, local and private tile data.
 
 ## Documentation
 
@@ -54,10 +54,6 @@ $> ./bin/show -verbose /usr/local/california-landscapes/
 2024/09/01 10:32:42 DEBUG Add feature for photo path=111892269932954958.jpg image:path=111892269932954958.jpg latitude=37.858333333333334 longitude=-122.14277777777778
 2024/09/01 10:32:42 DEBUG Add feature for photo path=111926480833581885.jpg image:path=111926480833581885.jpg latitude=37.45333333333333 longitude=-122.37527777777777
 2024/09/01 10:32:42 DEBUG Add feature for photo path=111919640654218972.jpg image:path=111919640654218972.jpg latitude=39.11555555555556 longitude=-123.23305555555555
-2024/09/01 10:32:42 DEBUG Add feature for photo path=112136228917540471.jpg image:path=112136228917540471.jpg latitude=34.11 longitude=-118.85166666666666
-2024/09/01 10:32:42 DEBUG Add feature for photo path=112320733897586075.jpg image:path=112320733897586075.jpg latitude=37.01888888888889 longitude=-121.08611111111111
-2024/09/01 10:32:42 DEBUG Add feature for photo path=112241456835385002.jpg image:path=112241456835385002.jpg latitude=40.40333333333333 longitude=-116.86194444444443
-2024/09/01 10:32:42 DEBUG Add feature for photo path=113028507763072851.jpg image:path=113028507763072851.jpg latitude=34.26861111111111 longitude=-118.23666666666666
 ... and so on
 2024/09/01 10:32:42 DEBUG Add feature for photo path=113024968664322222.jpg image:path=113024968664322222.jpg latitude=39.94444444444444 longitude=-122.33999999999999
 2024/09/01 10:32:42 DEBUG Add feature for photo path=112983207871215439.jpg image:path=112983207871215439.jpg latitude=33.91361111111111 longitude=-117.73805555555556
@@ -92,5 +88,5 @@ This is an early stage project. It doesn't do very much _by design_ but that doe
 ## See also
 
 * https://github.com/sfomuseum/go-www-show
-* https://github.com/sfomuseum/go-geojson-show
+* https://github.com/rwcarlsen/goexif
 * https://pkg.go.dev/io/fs
