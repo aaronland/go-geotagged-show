@@ -79,11 +79,11 @@ $> ./bin/show \
 
 This is an early-stage project. It doesn't do very much _by design_ but that doesn't mean everything has been done yet. Notably:
 
-* As written, the code expects all photos to be in a single un-nested directory. I will add support for nested folders in future releases.
-
 * Although the command-line `show` tool is designed to serve folders on the local filesystem the actual code operates on [Go language io/fs.FS instances](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which means that, technically, it can serve geotagged photos from anything that implements the `fs.FS` interface. That might include an S3 bucket or, if I ever write the code, photos hosted on a third-party service like Flickr.
 
 * The user interface could do with a simple (no frameworks) carousel for showing all the images without needing to click on their markers. Pull requests are welcome for this.
+
+* Likewise, some kind of marker clustering to account for ["red dot fever"](https://googleearthdesign.blogspot.com/2009/05/clustering-placemarks.html) is probably necessary.
 
 ## See also
 

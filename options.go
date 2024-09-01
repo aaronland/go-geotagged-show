@@ -33,7 +33,7 @@ func RunOptionsFromFlagSet(ctx context.Context, fs *flag.FlagSet) (*RunOptions, 
 		ProtomapsTheme:  protomaps_theme,
 		Port:            port,
 		LabelProperties: label_properties,
-		Verbose: verbose,
+		Verbose:         verbose,
 	}
 
 	br, err := www_show.NewBrowser(ctx, "web://")

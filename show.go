@@ -73,7 +73,7 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 
 	var geotagged_fs io_fs.FS
 	count_geotagged := len(opts.GeotaggedPhotos)
-	
+
 	switch count_geotagged {
 	case 0:
 		return fmt.Errorf("No geotagged photo sources to crawl")
@@ -82,7 +82,7 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 	default:
 
 		geotagged_fs = opts.GeotaggedPhotos[0]
-		
+
 		for i := 1; i < count_geotagged; i++ {
 			geotagged_fs = merged_fs.NewMergedFS(geotagged_fs, opts.GeotaggedPhotos[i])
 		}
@@ -113,7 +113,7 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 			r, err := geotagged_fs.Open(path)
 
 			if err != nil {
-				logger.Error("Failed to open image for reading, skipping", "error", err)
+				logger.Debug("Failed to open image for reading, skipping", "error", err)
 				return
 			}
 
@@ -122,26 +122,24 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 			x, err := exif.Decode(r)
 
 			if err != nil {
-				logger.Error("Failed to decode EXIF data, skipping", "error", err)
+				logger.Debug("Failed to decode EXIF data, skipping", "error", err)
 				return
 			}
 
 			lat, lon, err := x.LatLong()
 
 			if err != nil {
-				logger.Error("Failed to derive lat,lon from EXIF data, skipping", "error", err)
+				logger.Debug("Failed to derive lat,lon from EXIF data, skipping", "error", err)
 				return
 			}
 
-			fname := filepath.Base(path)
-
 			pt := orb.Point([2]float64{lon, lat})
 			f := geojson.NewFeature(pt)
-			f.Properties["image:path"] = fname
 
+			f.Properties["image:path"] = path
 			fc.Append(f)
 
-			logger.Debug("Add feature for photo", "image:path", path, "latitude", lat, "longitude", lon)
+			logger.Info("Add feature for photo", "image:path", path, "latitude", lat, "longitude", lon)
 			return
 		}(path)
 
