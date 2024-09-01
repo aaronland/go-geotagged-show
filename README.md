@@ -77,7 +77,7 @@ $> ./bin/show \
 
 ## Under the hood
 
-This is an early stage project. It doesn't do very much _by design_ but that doesn't everything has been done yet. Notably:
+This is an early-stage project. It doesn't do very much _by design_ but that doesn't mean everything has been done yet. Notably:
 
 * As written, the code expects all photos to be in a single un-nested directory. I will add support for nested folders in future releases.
 
@@ -88,5 +88,6 @@ This is an early stage project. It doesn't do very much _by design_ but that doe
 ## See also
 
 * https://github.com/sfomuseum/go-www-show
+* https://github.com/sfomuseum/go-geojson-show
 * https://github.com/rwcarlsen/goexif
 * https://pkg.go.dev/io/fs
