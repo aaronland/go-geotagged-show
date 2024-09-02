@@ -113,7 +113,9 @@ In the example above, there are (2) parameter flags and (1) "path" being passed 
 -root 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01'
 ```
 
-The `go-flickr-api` filesystem abstraction works by treating the value passed to the `fs.ReadDir` method as query parameters to pass to the Flickr API in order to return "standard places response" (list) results. Ideally this would be passed in not as a flag but as a path since it "looks" like a conventional path.
+The `go-flickr-api` filesystem abstraction works by treating the value passed to the `fs.ReadDir` method as query parameters to pass to the Flickr API in order to return "standard places response" (list) results. In this case the "root" is the list of the photos returned by the [flickr.photosets.getPhotos](https://www.flickr.com/services/api/flickr.photosets.getPhotos.htm) API method, for the photoset with ID [72157629455113026](https://www.flickr.com/photos/straup/albums/72157629455113026) (belonging to user [35034348999%40N01](https://www.flickr.com/photos/straup/).
+
+Ideally this would be passed in not as a flag but as a path since it "looks" like a conventional path. This is discussed more below.
 
 ```
 -flickr-client-uri 'oauth1://?consumer_key={KEY}&consumer_secret={SECRET}&oauth_token={TOKEN}&oauth_token_secret={SECRET}'
@@ -126,6 +128,8 @@ For example:
 ```
 'flickr://?client-uri={flickr-client-uri}'
 ```
+
+_Note the use of the `{flickr-client-uri}` replacement string which would otherwise need to be URL-escaped and then everything would be even harder to read than it already is._
 
 This is the "path" for the photos to show on a map. Or rather it's signal to use the Flickr API filesystem abstraction and the "path" (or "root") determining which photos to fetch is defined above in the `-root` flag.
 
