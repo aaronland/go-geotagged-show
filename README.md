@@ -79,7 +79,7 @@ $> ./bin/show \
 
 ### Showing geotagged photos using the Flickr API
 
-![](images/go-geotagged-show-flickr-api.png)
+![](docs/images/go-geotagged-show-flickr-api.png)
 
 ```
 $> ./bin/show \
