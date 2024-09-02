@@ -131,7 +131,7 @@ For example:
 
 _Note the use of the `{flickr-client-uri}` replacement string which would otherwise need to be URL-escaped and then everything would be even harder to read than it already is._
 
-This is the "path" for the photos to show on a map. Or rather it's signal to use the Flickr API filesystem abstraction and the "path" (or "root") determining which photos to fetch is defined above in the `-root` flag.
+This is the "path" for the photos to show on a map. Really, it's a "URI" that is being parsed the `flickr://` scheme is a signal to use the Flickr API filesystem abstraction and the "path" (or "root") determining which photos to fetch is defined above in the `-root` flag.
 
 This is not ideal. It will change. In the meantime, it _does_ work which is pretty cool.
 
