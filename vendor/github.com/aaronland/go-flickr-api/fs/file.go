@@ -47,6 +47,10 @@ func (f *apiFile) Read(b []byte) (int, error) {
 	return f.content.Read(b)
 }
 
+func (f *apiFile) ReadDir(n int) ([]io_fs.DirEntry, error) {
+	return make([]io_fs.DirEntry, 0), nil
+}
+
 func (f *apiFile) Close() error {
 
 	if f.closed {

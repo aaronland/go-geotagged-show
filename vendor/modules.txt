@@ -1,4 +1,4 @@
-# github.com/aaronland/go-flickr-api v1.1.0
+# github.com/aaronland/go-flickr-api v1.1.2
 ## explicit; go 1.22
 github.com/aaronland/go-flickr-api/auth
 github.com/aaronland/go-flickr-api/client

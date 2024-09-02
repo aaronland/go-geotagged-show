@@ -1,5 +1,5 @@
-github.com/aaronland/go-flickr-api v1.1.0 h1:2dBb+1g7qEYF4xmZDYX/VbWyA8+7m2xXR2wgVfmJRdA=
-github.com/aaronland/go-flickr-api v1.1.0/go.mod h1:li7BoYQTUlQ2UhWDF7LyPkHnVUwj2BxJdgYszXNpX3g=
+github.com/aaronland/go-flickr-api v1.1.2 h1:sI1cFhnGduLtehLR+Up+wjPqrWUqkpqi2HnJZMWoB1Y=
+github.com/aaronland/go-flickr-api v1.1.2/go.mod h1:li7BoYQTUlQ2UhWDF7LyPkHnVUwj2BxJdgYszXNpX3g=
 github.com/aaronland/go-http-leaflet v0.5.0 h1:/T5LJR6iwfU/pAi33uz38TcaXu3iInw8AMSS/yVGLnY=
 github.com/aaronland/go-http-leaflet v0.5.0/go.mod h1:Z8InoPjM29554d/zwW94coW2ibJwfVTuOWXmhCgU8rU=
 github.com/aaronland/go-http-rewrite v1.1.0 h1:HhsltNyYRnIz2FR+qANZLx2ykiRuNuNK1JgPonKBLHQ=

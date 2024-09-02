@@ -63,6 +63,10 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 			q := u.Query()
 			client_uri := q.Get("client-uri")
 
+			if flickr_client_uri != "" && strings.Contains(client_uri, "{flickr-client-uri}"){
+				client_uri = strings.Replace(client_uri, "{flickr-client-uri}", flickr_client_uri, 1)
+			}
+			
 			cl, err := client.NewClient(ctx, client_uri)
 
 			if err != nil {
@@ -164,6 +168,20 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 			pt := orb.Point([2]float64{lon, lat})
 			f := geojson.NewFeature(pt)
 
+			if flickr_fs.MatchesPhotoURL(path){
+
+				v, err := flickr_fs.DerivePhotoURL(path)
+
+				if err != nil {
+					logger.Debug("Failed to derive Flickr photo URL, skipping", "error", err)
+					return
+				}
+
+				logger = logger.With("new path", v)
+				logger.Debug("Reassign path derived from Flickr URL")
+				path = v
+			}
+			
 			f.Properties["image:path"] = path
 			fc.Append(f)
 

@@ -2,7 +2,7 @@
 
 There is now experimental support for reading photos and the results of [standard places response](https://code.flickr.net/2008/08/19/standard-photos-response-apis-for-civilized-age/) API calls using the [io/fs.FS](https://pkg.go.dev/io/fs) interfaces.
 
-Individial photos can be read using the `Open` method where file names are expected to take the form of.
+Individual photos can be read using the `Open` method where file names are expected to take the form of.
 
 * A unique numeric identifier for a photo on the Flickr website
 * The fully-qualified path (not the whole URL) for an static photo asset hosted by the Flickr webservers.
@@ -38,7 +38,19 @@ This method will return zero or more `fs.DirEntry` instances whose name (path) w
 method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01/#/7244/7071114647_b8bcd16b65_o.jpg
 ```
 
-Which is not ideal but easy enough to account for (which the `Open` and `ReadFile` methods do automatically. All of the [tests](fs_test.go) pass but there may still be "gotchas" or other edge cases.
+Which is not ideal but easy enough to account for (which the `Open` and `ReadFile` methods do automatically.
+
+## Tests
+
+All of the [tests](fs_test.go) pass but there may still be "gotchas" or other edge cases. In order to run the tests with calls to the Flickr API you will need to run them with a valid `-client-uri` flag. For example:
+
+```
+$> go test -v -run TestFS -client-uri 'oauth1://?consumer_key={CONSUMER_KEY}&consumer_secret={CONSUMER_SECRET}&oauth_token={OAUTH_TOKEN}&oauth_token_secret={OAUTH_SECRET}'
+```
+
+## Caching
+
+There is current no caching. Every time you `Open` a file it is fetched from the Flickr API and/or photo servers. Some amount of caching would be good.
 
 ## Example
 
@@ -59,7 +71,7 @@ func main() {
 	ctx := context.Background()
 
 	// https://github.com/aaronland/go-flickr-api?tab=readme-ov-file#clients
-	client_uri := "oauth2://..."
+	client_uri := "oauth1://..."
 	
 	cl, _ := client.NewClient(ctx, client_uri)
 	fs := New(ctx, cl)

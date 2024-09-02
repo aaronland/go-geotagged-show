@@ -18,13 +18,41 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-var re_photo = regexp.MustCompile(`^(?:\d+|(?:.*?\#)?\/\d+\/\d+_\w+_[a-z]\.\w+)$`)
-var re_url = regexp.MustCompile(`\#?(\/\d+\/\d+_\w+_[a-z]\.\w+)$`)
+var re_photo = regexp.MustCompile(`^(?:\d+|(?:.*?\#)?\/?\d+\/\d+_\w+_[a-z]\.\w+)$`)
+var re_url = regexp.MustCompile(`\#?(\/?\d+\/\d+_\w+_[a-z]\.\w+)$`)
 
 type apiFS struct {
 	io_fs.FS
 	http_client *http.Client
 	client      client.Client
+}
+
+// MatchesPhotoId returns a boolean value indicating whether 'v' should be treated as a known Flickr photo ID (or URL)
+// or as a "standard photo response" query URL.
+func MatchesPhotoId(v string) bool {
+	return re_photo.MatchString(v)
+}
+
+// MatchesPhotoURL returns boolean value indicating whether 'v' is a valid Flickr photo URL.
+func MatchesPhotoURL(v string) bool {
+	return re_url.MatchString(v)
+}
+
+// DerivePhotoURL extracts a known Flickr photo	URL from a compound path URI as returned by the `fs.ReadDir` method.
+func DerivePhotoURL(v string) (string, error) {
+
+	if !MatchesPhotoURL(v) {
+		return "", fmt.Errorf("String does not match photo URL")
+	}
+
+	m := re_url.FindStringSubmatch(v)
+	path := m[1]
+
+	if !strings.HasPrefix(path, "/") {
+		path = fmt.Sprintf("/%s", path)
+	}
+
+	return path, nil
 }
 
 // New creates a new FileSystem that reads files from the Flickr API.
@@ -53,7 +81,7 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 
 	logger.Debug("Open file")
 
-	if !re_photo.MatchString(name) {
+	if !MatchesPhotoId(name) {
 
 		logger.Debug("File does not match photo ID or URL, assuming SPR entry")
 
@@ -70,10 +98,9 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 
 	var path string
 
-	if re_url.MatchString(name) {
+	if MatchesPhotoURL(name) {
 
-		m := re_url.FindStringSubmatch(name)
-		path = m[1]
+		path, _ = DerivePhotoURL(name)
 		logger.Debug("Derive relative path", "rel path", path)
 	} else {
 
@@ -152,7 +179,8 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 	u.Path = path
 	url := u.String()
 
-	logger.Debug("Fetch URL", "url", url)
+	logger = logger.With("url", url)
+	logger.Debug("Fetch photo")
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 
@@ -165,6 +193,8 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to execute request, %w", err)
 	}
+
+	// logger.Debug("Status", "code", rsp.StatusCode)
 
 	if rsp.StatusCode != http.StatusOK {
 		defer rsp.Body.Close()
@@ -180,7 +210,7 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 	t, err := time.Parse(time.RFC1123, lastmod)
 
 	if err != nil {
-		logger.Error("Failed to parse lastmod time, default to now", "lastmod", lastmod, "error", err)
+		logger.Debug("Failed to parse lastmod time, default to now", "lastmod", lastmod, "error", err)
 		t = time.Now()
 	}
 
@@ -194,6 +224,7 @@ func (f *apiFS) Open(name string) (io_fs.File, error) {
 		modTime:        t,
 	}
 
+	logger.Debug("Return file", "file name", u.Path, "len", int_len)
 	return fl, nil
 }
 
