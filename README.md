@@ -94,8 +94,8 @@ $> ./bin/show \
 2024/09/02 13:17:45 DEBUG Read dir name="method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01"
 ...and so on
 2024/09/02 13:17:51 DEBUG Start server
-2024/09/02 13:17:51 DEBUG HEAD request succeeded url=http://localhost:52284
-2024/09/02 13:17:52 INFO Server is ready and features are viewable url=http://localhost:52284
+2024/09/02 13:17:51 DEBUG HEAD request succeeded url=http://localhost:52140
+2024/09/02 13:17:52 INFO Server is ready and features are viewable url=http://localhost:52140
 2024/09/02 13:17:55 DEBUG Open file name=7137/6925950990_62c9dd820c_o.jpg
 2024/09/02 13:17:55 DEBUG Derive relative path name=7137/6925950990_62c9dd820c_o.jpg "rel path"=/7137/6925950990_62c9dd820c_o.jpg
 2024/09/02 13:17:55 DEBUG Fetch photo name=7137/6925950990_62c9dd820c_o.jpg url=https://live.staticflickr.com/7137/6925950990_62c9dd820c_o.jpg
