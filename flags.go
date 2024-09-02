@@ -21,6 +21,9 @@ var point_style string
 var label_properties multi.MultiString
 var verbose bool
 
+var root string
+var flickr_client_uri string
+
 func DefaultFlagSet() *flag.FlagSet {
 
 	fs := flagset.NewFlagSet("show")
@@ -35,6 +38,10 @@ func DefaultFlagSet() *flag.FlagSet {
 
 	// TBD
 	// fs.Var(&label_properties, "label", "Zero or more (GeoJSON Feature) properties to use to construct a label for a feature's popup menu when it is clicked on.")
+
+	fs.StringVar(&flickr_client_uri, "flickr-client-uri", "", "Optional aaronland/go-flickr-api/client URI. This is a helper flag. If defined and if any of the paths provided to the (show) tool contain the string \"{flickr-client-uri}\" those strings wil be replaced with this value.")
+
+	fs.StringVar(&root, "root", ".", "The root path to use when scanning for photos.")
 
 	fs.BoolVar(&verbose, "verbose", false, "Enable verbose (debug) logging.")
 

@@ -37,6 +37,12 @@ window.addEventListener("load", function load(event){
 
 		var features = f.features;
 		var count = features.length;
+
+		if (count == 0){
+		    map.setZoom(2);
+		    console.log("No features to display");
+		    return;
+		}
 		
 		for (var i=0; i < count; i++){
 		    var show_id = "show-" + (i+1);
@@ -83,8 +89,18 @@ window.addEventListener("load", function load(event){
 			    
 			}
 
-			var popup_text = '<img src="/photos/' + im_path + '" class="geotagged-photo" />';
+			// To do: Eventually read "/photos" prefix from map_config
+
+			if (im_path.startsWith("/")){
+			    im_path = "/photos" + im_path;
+			} else {
+			    im_path = "/photos/" + im_path;			    
+			}
+
+			console.log("image", im_path);
 			
+			var popup_text = '<a href="' + im_path + '"><img src="' + im_path + '" class="geotagged-photo" /></a>';
+
 			if (label_text.length > 0){ 
 			    popup_text += "<br />" + label_text.join("<br />")
 			}

@@ -21,6 +21,7 @@ type RunOptions struct {
 	GeotaggedPhotos []io_fs.FS
 	Browser         www_show.Browser
 	Verbose         bool
+	Root            string
 }
 
 func RunOptionsFromFlagSet(ctx context.Context, fs *flag.FlagSet) (*RunOptions, error) {
@@ -34,6 +35,7 @@ func RunOptionsFromFlagSet(ctx context.Context, fs *flag.FlagSet) (*RunOptions, 
 		Port:            port,
 		LabelProperties: label_properties,
 		Verbose:         verbose,
+		Root:            root,
 	}
 
 	br, err := www_show.NewBrowser(ctx, "web://")

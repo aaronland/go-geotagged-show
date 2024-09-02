@@ -1,3 +1,5 @@
+github.com/aaronland/go-flickr-api v1.1.2 h1:sI1cFhnGduLtehLR+Up+wjPqrWUqkpqi2HnJZMWoB1Y=
+github.com/aaronland/go-flickr-api v1.1.2/go.mod h1:li7BoYQTUlQ2UhWDF7LyPkHnVUwj2BxJdgYszXNpX3g=
 github.com/aaronland/go-http-leaflet v0.5.0 h1:/T5LJR6iwfU/pAi33uz38TcaXu3iInw8AMSS/yVGLnY=
 github.com/aaronland/go-http-leaflet v0.5.0/go.mod h1:Z8InoPjM29554d/zwW94coW2ibJwfVTuOWXmhCgU8rU=
 github.com/aaronland/go-http-rewrite v1.1.0 h1:HhsltNyYRnIz2FR+qANZLx2ykiRuNuNK1JgPonKBLHQ=
@@ -57,6 +59,8 @@ github.com/tidwall/match v1.1.1/go.mod h1:eRSPERbgtNPcGhD8UCthc6PmLEQXEWd3PRB5JT
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tidwall/pretty v1.2.0 h1:RWIZEg2iJ8/g6fDDYzMpobmaoGh5OLl4AXtGUGPcqCs=
 github.com/tidwall/pretty v1.2.0/go.mod h1:ITEVvHYasfjBbM0u2Pg8T2nJnzm8xPwvNhhsoaGGjNU=
+github.com/whosonfirst/go-ioutil v1.0.2 h1:+GJPfa42OFn5A+5yJSc5jQTQIkNV3/MhYyg4pavdrC8=
+github.com/whosonfirst/go-ioutil v1.0.2/go.mod h1:2dS1vWdAIkiHDvDF8fYyjv6k2NISmwaIjJJeEDBEdvg=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
 github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgklLGvcBnW8=
