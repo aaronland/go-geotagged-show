@@ -1,3 +1,9 @@
+# github.com/aaronland/go-flickr-api v1.1.0
+## explicit; go 1.22
+github.com/aaronland/go-flickr-api/auth
+github.com/aaronland/go-flickr-api/client
+github.com/aaronland/go-flickr-api/fs
+github.com/aaronland/go-flickr-api/response
 # github.com/aaronland/go-http-leaflet v0.5.0
 ## explicit; go 1.22.4
 github.com/aaronland/go-http-leaflet
@@ -58,6 +64,9 @@ github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 ## explicit; go 1.16
 github.com/tidwall/pretty
+# github.com/whosonfirst/go-ioutil v1.0.2
+## explicit; go 1.16
+github.com/whosonfirst/go-ioutil
 # github.com/yalue/merged_fs v1.3.0
 ## explicit; go 1.16
 github.com/yalue/merged_fs

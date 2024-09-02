@@ -15,6 +15,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/aaronland/go-flickr-api/client"
+	flickr_fs "github.com/aaronland/go-flickr-api/fs"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
 	"github.com/rwcarlsen/goexif/exif"
@@ -45,16 +47,42 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 
 	geotagged_photos := make([]io_fs.FS, len(paths))
 
-	for idx, path := range paths {
+	for idx, uri := range paths {
 
-		abs_path, err := filepath.Abs(path)
+		u, err := url.Parse(uri)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive absolute path for %s, %w", path, err)
+			return fmt.Errorf("Failed to parse path %s, %w", uri, err)
 		}
 
-		slog.Info("Add filesystem", "path", abs_path)
-		geotagged_photos[idx] = os.DirFS(abs_path)
+		var fs io_fs.FS
+
+		switch u.Scheme {
+		case "flickr":
+
+			q := u.Query()
+			client_uri := q.Get("client-uri")
+
+			cl, err := client.NewClient(ctx, client_uri)
+
+			if err != nil {
+				return fmt.Errorf("Failed to create new Flickr API client, %w", err)
+			}
+
+			fs = flickr_fs.New(ctx, cl)
+
+		default:
+			abs_path, err := filepath.Abs(uri)
+
+			if err != nil {
+				return fmt.Errorf("Failed to derive absolute path for %s, %w", uri, err)
+			}
+
+			fs = os.DirFS(abs_path)
+		}
+
+		// slog.Info("Add filesystem for URI", "uri", uri)
+		geotagged_photos[idx] = fs
 	}
 
 	opts.GeotaggedPhotos = geotagged_photos
@@ -146,7 +174,7 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 		return nil
 	}
 
-	err := io_fs.WalkDir(geotagged_fs, ".", walk_func)
+	err := io_fs.WalkDir(geotagged_fs, opts.Root, walk_func)
 
 	if err != nil {
 		return fmt.Errorf("Failed to walk geotagged FS, %w", err)
