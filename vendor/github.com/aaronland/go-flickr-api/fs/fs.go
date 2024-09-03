@@ -303,12 +303,12 @@ func (f *apiFS) ReadDir(name string) ([]io_fs.DirEntry, error) {
 
 	cb := func(ctx context.Context, r io.ReadSeekCloser, err error) error {
 
-		defer r.Close()
-
 		if err != nil {
 			return err
 		}
 
+		defer r.Close()
+		
 		body, err := io.ReadAll(r)
 
 		if err != nil {

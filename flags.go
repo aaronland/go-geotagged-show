@@ -21,8 +21,8 @@ var point_style string
 var label_properties multi.MultiString
 var verbose bool
 
-var root string
 var flickr_client_uri string
+var flickr_root_uri string
 
 func DefaultFlagSet() *flag.FlagSet {
 
@@ -39,15 +39,15 @@ func DefaultFlagSet() *flag.FlagSet {
 	// TBD
 	// fs.Var(&label_properties, "label", "Zero or more (GeoJSON Feature) properties to use to construct a label for a feature's popup menu when it is clicked on.")
 
-	fs.StringVar(&flickr_client_uri, "flickr-client-uri", "", "Optional aaronland/go-flickr-api/client URI. This is a helper flag. If defined and if any of the paths provided to the (show) tool contain the string \"{flickr-client-uri}\" those strings wil be replaced with this value.")
+	fs.StringVar(&flickr_client_uri, "flickr-client-uri", "", "This is a helper flag. If defined, any of the URIs with the \"flickr://\" scheme passed to the (show) tool containing the string \"{flickr-client-uri}\" will have those strings wil be replaced with this value. Expected to be a valid aaronland/go-flickr-api/client.Client URI")
 
-	fs.StringVar(&root, "root", ".", "The root path to use when scanning for photos.")
+	fs.StringVar(&flickr_root_uri, "flickr-root-uri", "", "This is a helper flag. If defined, any of the URIs with the \"flickr://\" scheme passed to the (show) tool containing the string \"{flickr-root-uri}\" will have those strings wil be replaced with this value. Expected to be a string-encoded set of query parameters that can be passed to the aaronland/go-flickr-api/fs.ReadDir method.")
 
 	fs.BoolVar(&verbose, "verbose", false, "Enable verbose (debug) logging.")
 
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Command-line tool for showing a folder of geotagged photos on a map from an on-demand web server.\n")
-		fmt.Fprintf(os.Stderr, "Usage:\n\t %s path(N) path(N)\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Command-line tool for showing one or more collections of geotagged photos on a map from an on-demand web server.\n")
+		fmt.Fprintf(os.Stderr, "Usage:\n\t %s uri(N) uri(N)\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Valid options are:\n")
 		fs.PrintDefaults()
 	}

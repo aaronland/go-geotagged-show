@@ -17,11 +17,11 @@ import (
 
 	"github.com/aaronland/go-flickr-api/client"
 	flickr_fs "github.com/aaronland/go-flickr-api/fs"
+	"github.com/aaronland/go-geotagged-show/static/www"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
-	"github.com/sfomuseum/go-geojson-show/static/www"
 	"github.com/sfomuseum/go-http-protomaps"
 	www_show "github.com/sfomuseum/go-www-show"
 	"github.com/yalue/merged_fs"
@@ -45,9 +45,9 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 
 	paths := fs.Args()
 
-	geotagged_photos := make([]io_fs.FS, len(paths))
+	geotagged_fs := make([]GeotaggedFS, 0)
 
-	for idx, uri := range paths {
+	for _, uri := range paths {
 
 		u, err := url.Parse(uri)
 
@@ -57,16 +57,23 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 
 		var fs io_fs.FS
 
+		// START OF wrap this in a NewGeotaggedFS method (aaronland/go-roster)
+
 		switch u.Scheme {
 		case "flickr":
 
 			q := u.Query()
 			client_uri := q.Get("client-uri")
+			root_uri := q.Get("root")
 
-			if flickr_client_uri != "" && strings.Contains(client_uri, "{flickr-client-uri}"){
-				client_uri = strings.Replace(client_uri, "{flickr-client-uri}", flickr_client_uri, 1)
+			if flickr_client_uri != "" && client_uri == "{flickr-client-uri}" {
+				client_uri = flickr_client_uri
 			}
-			
+
+			if flickr_root_uri != "" && root_uri == "{flickr-root-uri}" {
+				root_uri = flickr_root_uri
+			}
+
 			cl, err := client.NewClient(ctx, client_uri)
 
 			if err != nil {
@@ -74,6 +81,13 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 			}
 
 			fs = flickr_fs.New(ctx, cl)
+
+			flickr_fs := &FlickrGeotaggedFS{
+				root: root_uri,
+				fs:   fs,
+			}
+
+			geotagged_fs = append(geotagged_fs, flickr_fs)
 
 		default:
 			abs_path, err := filepath.Abs(uri)
@@ -83,13 +97,19 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 			}
 
 			fs = os.DirFS(abs_path)
+
+			local_fs := &LocalGeotaggedFS{
+				fs: fs,
+			}
+
+			geotagged_fs = append(geotagged_fs, local_fs)
+
 		}
 
-		// slog.Info("Add filesystem for URI", "uri", uri)
-		geotagged_photos[idx] = fs
+		// END OF wrap this in a NewGeotaggedFS method (aaronland/go-roster)
 	}
 
-	opts.GeotaggedPhotos = geotagged_photos
+	opts.GeotaggedFS = geotagged_fs
 
 	return RunWithOptions(ctx, opts)
 }
@@ -103,99 +123,111 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 
 	exif.RegisterParsers(mknote.All...)
 
-	var geotagged_fs io_fs.FS
-	count_geotagged := len(opts.GeotaggedPhotos)
-
-	switch count_geotagged {
-	case 0:
-		return fmt.Errorf("No geotagged photo sources to crawl")
-	case 1:
-		geotagged_fs = opts.GeotaggedPhotos[0]
-	default:
-
-		geotagged_fs = opts.GeotaggedPhotos[0]
-
-		for i := 1; i < count_geotagged; i++ {
-			geotagged_fs = merged_fs.NewMergedFS(geotagged_fs, opts.GeotaggedPhotos[i])
-		}
-	}
-
 	fc := geojson.NewFeatureCollection()
 	wg := new(sync.WaitGroup)
+	mu := new(sync.RWMutex)
 
-	walk_func := func(path string, d io_fs.DirEntry, err error) error {
+	// Walk each GeotaggedFS separately and derive suitable images for showing on
+	// a map. Originally this was done by walking a single "merge" FS but that started
+	// causing all kinds of headaches. It is easier just to be stupid and direct.
 
-		if err != nil {
-			return err
-		}
+	for _, geotagged_fs := range opts.GeotaggedFS {
 
-		if d.IsDir() {
-			return nil
-		}
+		fs_scheme := geotagged_fs.Scheme()
+		fs_root := geotagged_fs.Root()
 
-		wg.Add(1)
+		logger := slog.Default()
+		logger = logger.With("scheme", fs_scheme, "root", fs_root)
 
-		go func(path string) {
+		logger.Debug("Walk filesystem")
 
-			defer wg.Done()
-
-			logger := slog.Default()
-			logger = logger.With("path", path)
-
-			r, err := geotagged_fs.Open(path)
+		walk_func := func(path string, d io_fs.DirEntry, err error) error {
 
 			if err != nil {
-				logger.Debug("Failed to open image for reading, skipping", "error", err)
-				return
+				return err
 			}
 
-			defer r.Close()
-
-			x, err := exif.Decode(r)
-
-			if err != nil {
-				logger.Debug("Failed to decode EXIF data, skipping", "error", err)
-				return
+			if d.IsDir() {
+				return nil
 			}
 
-			lat, lon, err := x.LatLong()
+			wg.Add(1)
 
-			if err != nil {
-				logger.Debug("Failed to derive lat,lon from EXIF data, skipping", "error", err)
-				return
-			}
+			go func(path string) {
 
-			pt := orb.Point([2]float64{lon, lat})
-			f := geojson.NewFeature(pt)
+				defer wg.Done()
 
-			if flickr_fs.MatchesPhotoURL(path){
+				logger := slog.Default()
+				logger = logger.With("scheme", fs_scheme)
+				logger = logger.With("path", path)
 
-				v, err := flickr_fs.DerivePhotoURL(path)
+				r, err := geotagged_fs.FS().Open(path)
 
 				if err != nil {
-					logger.Debug("Failed to derive Flickr photo URL, skipping", "error", err)
+					logger.Debug("Failed to open image for reading, skipping", "error", err)
 					return
 				}
 
-				logger = logger.With("new path", v)
-				logger.Debug("Reassign path derived from Flickr URL")
-				path = v
-			}
-			
-			f.Properties["image:path"] = path
-			fc.Append(f)
+				defer r.Close()
 
-			logger.Info("Add feature for photo", "image:path", path, "latitude", lat, "longitude", lon)
-			return
-		}(path)
+				x, err := exif.Decode(r)
 
-		return nil
-	}
+				if err != nil {
+					logger.Debug("Failed to decode EXIF data, skipping", "error", err)
+					return
+				}
 
-	err := io_fs.WalkDir(geotagged_fs, opts.Root, walk_func)
+				lat, lon, err := x.LatLong()
 
-	if err != nil {
-		return fmt.Errorf("Failed to walk geotagged FS, %w", err)
+				if err != nil {
+					logger.Debug("Failed to derive lat,lon from EXIF data, skipping", "error", err)
+					return
+				}
+
+				pt := orb.Point([2]float64{lon, lat})
+				f := geojson.NewFeature(pt)
+
+				path, err = geotagged_fs.URI(path)
+
+				if err != nil {
+					logger.Error("Failed to derive path for scheme", "error", err)
+					return
+				}
+
+				// This bit is important. It is used in conjunction with a FS "lookup" table
+				// defined below to determine which FS to use for serving any given image based
+				// on the image prefix (scheme)
+
+				image_path, err := url.JoinPath(geotagged_fs.Scheme(), path)
+
+				if err != nil {
+					logger.Error("Failed to derive image path from scheme", "error", err)
+					return
+				}
+
+				f.Properties["image:path"] = image_path
+
+				// The "Append" method does not do this so we do
+				// https://github.com/paulmach/orb/blob/v0.11.1/geojson/feature_collection.go#L39
+
+				mu.Lock()
+				defer mu.Unlock()
+
+				fc.Append(f)
+
+				logger.Info("Add feature for photo", "image:path", image_path, "latitude", lat, "longitude", lon)
+				return
+			}(path)
+
+			return nil
+		}
+
+		err := io_fs.WalkDir(geotagged_fs.FS(), fs_root, walk_func)
+
+		if err != nil {
+			return fmt.Errorf("Failed to walk geotagged FS, %w", err)
+		}
+
 	}
 
 	wg.Wait()
@@ -205,13 +237,41 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 	www_fs := http.FS(www.FS)
 	mux.Handle("/", http.FileServer(www_fs))
 
-	photos_fs := http.FS(geotagged_fs)
+	// Loop through all the geotagged FS instances and group them by scheme
+	// creating a new "merge" FS instance for each set stored in a lookup
+	// table. That lookup table is used to decide which FS to use to serve
+	// individual image requests. Remember: the scheme (prefix) for image
+	// requests is set above in the image:path GeoJSON property
+
+	fs_sorted := make(map[string][]io_fs.FS)
+	fs_lookup := make(map[string]io_fs.FS)
+
+	for i := 0; i < len(opts.GeotaggedFS); i++ {
+
+		geotagged_fs := opts.GeotaggedFS[i]
+		fs_scheme := geotagged_fs.Scheme()
+
+		fs_col, exists := fs_sorted[fs_scheme]
+
+		if !exists {
+			fs_col = make([]io_fs.FS, 0)
+		}
+
+		fs_col = append(fs_col, geotagged_fs.FS())
+		fs_sorted[fs_scheme] = fs_col
+	}
+
+	for scheme, fs_col := range fs_sorted {
+		combined_fs := merged_fs.MergeMultiple(fs_col...)
+		fs_lookup[scheme] = combined_fs
+	}
+
 	photos_prefix := "/photos/"
 
-	mux.Handle(photos_prefix, http.StripPrefix(photos_prefix, http.FileServer(photos_fs)))
+	photos_handler := photoHandler(fs_lookup)
+	mux.Handle(photos_prefix, http.StripPrefix(photos_prefix, photos_handler))
 
 	data_handler := dataHandler(fc)
-
 	mux.Handle("/features.geojson", data_handler)
 
 	//
@@ -300,6 +360,44 @@ func mapConfigHandler(cfg *mapConfig) http.Handler {
 			http.Error(rsp, "Internal server error", http.StatusInternalServerError)
 		}
 
+		return
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func photoHandler(fs_lookup map[string]io_fs.FS) http.Handler {
+
+	fn := func(rsp http.ResponseWriter, req *http.Request) {
+
+		logger := slog.Default()
+		logger = logger.With("url", req.URL.Path)
+
+		logger.Debug("Handle photos request")
+
+		path := req.URL.Path
+		path = strings.TrimLeft(path, "/")
+
+		parts := strings.Split(path, "/")
+		scheme := parts[0]
+
+		logger = logger.With("scheme", scheme)
+
+		geotagged_fs, exists := fs_lookup[scheme]
+
+		if !exists {
+			logger.Error("Failed to locate FS for scheme")
+			http.Error(rsp, "Not found", http.StatusNotFound)
+			return
+		}
+
+		scheme_prefix := fmt.Sprintf("%s/", scheme)
+
+		photos_fs := http.FS(geotagged_fs)
+		h := http.StripPrefix(scheme_prefix, http.FileServer(photos_fs))
+
+		logger.Info("Serve, stripping prefix", "prefix", scheme_prefix)
+		h.ServeHTTP(rsp, req)
 		return
 	}
 
