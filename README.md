@@ -143,7 +143,9 @@ $> ./bin/show \
 	/usr/local/california-landscapes
 ```
 
-Or, all the geotagged photos from multiple Flickr sources (two different albums). Note how this command does not use the `-flickr-root-uri` replacement flag since there is more than one Flickr source so the `?root=` parameter is URL-escaped and a bit hard look at:
+_Paths (URIs) without a registered scheme are assumed to be "local"._
+
+Or, all the geotagged photos from multiple Flickr sources (two different albums). Notice how this command does not use the `-flickr-root-uri` replacement flag since there is more than one Flickr source so the `?root=` parameter is URL-escaped and a bit hard look at:
 
 ```
 $> ./bin/show \
@@ -153,8 +155,6 @@ $> ./bin/show \
 ```
 
 ![](docs/images/go-geotagged-show-flickr-api-2.png)
-
-_Note: Paths (URIs) without a registered scheme are assumed to be "local"._
 
 ## Under the hood
 
