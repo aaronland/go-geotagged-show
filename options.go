@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	// io_fs "io/fs"
 
 	"github.com/sfomuseum/go-flags/flagset"
 	www_show "github.com/sfomuseum/go-www-show"
