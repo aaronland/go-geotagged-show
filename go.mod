@@ -3,7 +3,7 @@ module github.com/aaronland/go-geotagged-show
 go 1.23.0
 
 require (
-	github.com/aaronland/go-flickr-api v1.1.2
+	github.com/aaronland/go-flickr-api v1.1.3
 	github.com/paulmach/orb v0.11.1
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/sfomuseum/go-flags v0.10.0

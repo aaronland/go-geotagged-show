@@ -21,10 +21,14 @@ go build -mod vendor -ldflags="-s -w" -o bin/show cmd/show/main.go
 
 ```
 $> ./bin/show -h
-Command-line tool for showing a folder of geotagged photos on a map from an on-demand web server.
+Command-line tool for showing one or more collections of geotagged photos on a map from an on-demand web server.
 Usage:
-	 ./bin/show path(N) path(N)
+	 ./bin/show uri(N) uri(N)
 Valid options are:
+  -flickr-client-uri string
+    	This is a helper flag. If defined, any of the URIs with the "flickr://" scheme passed to the (show) tool containing the string "{flickr-client-uri}" will have those strings wil be replaced with this value. Expected to be a valid aaronland/go-flickr-api/client.Client URI
+  -flickr-root-uri string
+    	This is a helper flag. If defined, any of the URIs with the "flickr://" scheme passed to the (show) tool containing the string "{flickr-root-uri}" will have those strings wil be replaced with this value. Expected to be a string-encoded set of query parameters that can be passed to the aaronland/go-flickr-api/fs.ReadDir method.
   -map-provider string
     	Valid options are: leaflet, protomaps (default "leaflet")
   -map-tile-uri string
@@ -39,7 +43,6 @@ Valid options are:
     	A custom Leaflet style definition for geometries. This may either be a JSON-encoded string or a path on disk.
   -verbose
     	Enable verbose (debug) logging.
-
 ```
 
 #### For example
@@ -83,10 +86,9 @@ $> ./bin/show \
 
 ```
 $> ./bin/show \
-	-verbose \
-	-root 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01' \
 	-flickr-client-uri 'oauth1://?consumer_key={KEY}&consumer_secret={SECRET}&oauth_token={TOKEN}&oauth_token_secret={SECRET}' \
-	'flickr://?client-uri={flickr-client-uri}'
+	-flickr-root-uri 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999@N01' \
+	'flickr://?client-uri={flickr-client-uri}&root={flickr-root-uri}'
 
 2024/09/02 13:17:45 DEBUG Verbose logging enabled
 2024/09/02 13:17:45 DEBUG Open file name="method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01"
@@ -103,19 +105,9 @@ $> ./bin/show \
 ...and so on
 ```
 
-The ability to show geotagged photos from Flickr on a local map using the Flickr API is both experimental and a little finnicky (reflecting its experimental nature). It is possible, likely even, that the flags and the order in which they are passed will change.
+The ability to show geotagged photos from Flickr on a local map using the Flickr API is both experimental and a little finnicky (reflecting its experimental nature).
 
-As mentioned (below) the code to read photos uses the [Go language io/fs.FS abstraction](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/). The default abstraction is one for the local filesystem. There is also support for second abstraction using the Flickr API as implemented using the [aaronland/go-flickr-api](https://github.com/aaronland/go-flickr-api/tree/main/fs) package.
-
-In the example above, there are (2) parameter flags and (1) "path" being passed to the `show` command. These flags and the order in which are being passed reflect the ongoing work to best determine how things should work with multiple `io/fs.FS` implementations and their specific requirements.
-
-```
--root 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999%40N01'
-```
-
-The `go-flickr-api` filesystem abstraction works by treating the value passed to the `fs.ReadDir` method as query parameters to pass to the Flickr API in order to return "standard places response" (list) results. In this case the "root" is the list of the photos returned by the [flickr.photosets.getPhotos](https://www.flickr.com/services/api/flickr.photosets.getPhotos.htm) API method, for the photoset with ID [72157629455113026](https://www.flickr.com/photos/straup/albums/72157629455113026) (belonging to user [35034348999@N01](https://www.flickr.com/photos/straup/)).
-
-Ideally this would be passed in not as a flag but as a path since it "looks" like a conventional path. This is discussed more below.
+In the example above, there are (2) parameter flags and (1) "path" (or URI) being passed to the `show` command. They are:
 
 ```
 -flickr-client-uri 'oauth1://?consumer_key={KEY}&consumer_secret={SECRET}&oauth_token={TOKEN}&oauth_token_secret={SECRET}'
@@ -123,17 +115,35 @@ Ideally this would be passed in not as a flag but as a path since it "looks" lik
 
 This is a helper flag. If it is not empty its value will be used to replace any instance of the string `{flickr-client-uri}` in all the paths passed to the `show` command. It is expected to be a valid [aaronland/go-flickr-api/client.Client](https://github.com/aaronland/go-flickr-api?tab=readme-ov-file#clients) URI.
 
-For example:
-
 ```
-'flickr://?client-uri={flickr-client-uri}'
+-flickr-root-uri 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999@N01' 
 ```
 
-_Note the use of the `{flickr-client-uri}` replacement string which would otherwise need to be URL-escaped and then everything would be even harder to read than it already is._
+This is another helper flag. If it is not empty its value will be used to replace any instance of the string `{flickr-root-uri} in all the paths passed to the `show` command. It is expected to be a string-encoded query string.
 
-This is the "path" for the photos to show on a map. Really, it's a "URI" that is being parsed the `flickr://` scheme is a signal to use the Flickr API filesystem abstraction and the "path" (or "root") determining which photos to fetch is defined above in the `-root` flag.
+The `go-flickr-api` filesystem abstraction works by treating the value passed to the `fs.ReadDir` method as query parameters to pass to the Flickr API in order to return "standard places response" (list) results. In this case the "root" is the list of the photos returned by the [flickr.photosets.getPhotos](https://www.flickr.com/services/api/flickr.photosets.getPhotos.htm) API method, for the photoset with ID [72157629455113026](https://www.flickr.com/photos/straup/albums/72157629455113026) (belonging to user [35034348999@N01](https://www.flickr.com/photos/straup/)).
 
-This is not ideal. It will change. In the meantime, it _does_ work which is pretty cool.
+Finally, the "path" (or URI) passed to the `show` command looks like this:
+
+```
+'flickr://?client-uri={flickr-client-uri}&root={flickr-root-uri}'
+```
+
+Note the use of the `{flickr-client-uri}` and `{flickr-root-uri}` replacement strings which would otherwise need to be URL-escaped and then everything would be even harder to read than it already is.
+
+_The documentation for paths (URIs) is incomplete as of this writing._
+
+You can pass multiple "paths" (or URIs, really) to the `show` command. For example, here's how you would show both geotagged photos from Flickr and a local folder:
+
+```
+$> ./bin/show \
+	-flickr-client-uri 'oauth1://?consumer_key={KEY}&consumer_secret={SECRET}&oauth_token={TOKEN}&oauth_token_secret={SECRET}' \
+	-flickr-root-uri 'method=flickr.photosets.getPhotos&photoset_id=72157629455113026&user_id=35034348999@N01' \
+	'flickr://?client-uri={flickr-client-uri}&root={flickr-root-uri}'
+	/usr/local/california-landscapes
+```
+
+_Note: Paths (URIs) without a registered scheme are assumed to be "local"._
 
 ## Under the hood
 
@@ -141,7 +151,7 @@ This is an early-stage project. It doesn't do very much _by design_ but that doe
 
 * Titles, dates or anything that might be considered a "label" for geotagged images are not supported. They will be but I haven't worked out the best way to do that yet.
 
-* Although the command-line `show` tool is designed to serve folders on the local filesystem the actual code operates on [Go language io/fs.FS instances](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which means that, technically, it can serve geotagged photos from anything that implements the `fs.FS` interface. That might include an S3 bucket or, photos hosted on a third-party service [like Flickr](https://github.com/aaronland/go-flickr-api/tree/main/fs).
+* Although the command-line `show` tool is designed to serve folders on the local filesystem the actual code operates on [Go language io/fs.FS instances](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which means that, technically, it can serve geotagged photos from anything that implements the `fs.FS` interface. That might include an S3 bucket or, photos hosted on a third-party service [like Flickr](https://github.com/aaronland/go-flickr-api/tree/main/fs). These details are still being worked out in this package's [GeotaggedFS](geotagged_fs.go) interface.
 
 * The user interface could do with a simple (no frameworks) carousel for showing all the images without needing to click on their markers. Pull requests are welcome for this.
 
