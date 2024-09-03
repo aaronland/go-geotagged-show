@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	io_fs "io/fs"
+	// io_fs "io/fs"
 
 	"github.com/sfomuseum/go-flags/flagset"
 	www_show "github.com/sfomuseum/go-www-show"
@@ -18,7 +18,7 @@ type RunOptions struct {
 	Style           *LeafletStyle
 	PointStyle      *LeafletStyle
 	LabelProperties []string
-	GeotaggedPhotos []io_fs.FS
+	GeotaggedFS     []GeotaggedFS
 	Browser         www_show.Browser
 	Verbose         bool
 	Root            string

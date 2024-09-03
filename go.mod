@@ -1,4 +1,4 @@
-module github.com/sfomuseum/go-geojson-show
+module github.com/aaronland/go-geotagged-show
 
 go 1.23.0
 

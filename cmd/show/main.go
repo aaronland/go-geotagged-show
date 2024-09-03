@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/sfomuseum/go-geojson-show"
+	"github.com/aaronland/go-geotagged-show"
 )
 
 func main() {
