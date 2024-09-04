@@ -98,6 +98,13 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 		slog.Debug("Verbose logging enabled")
 	}
 
+	defer func(){
+
+		for _, geotagged_fs := range opts.GeotaggedFS {
+			geotagged_fs.Close()
+		}
+	}()
+	
 	exif.RegisterParsers(mknote.All...)
 
 	fc := geojson.NewFeatureCollection()
