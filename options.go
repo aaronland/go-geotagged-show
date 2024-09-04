@@ -26,6 +26,12 @@ func RunOptionsFromFlagSet(ctx context.Context, fs *flag.FlagSet) (*RunOptions, 
 
 	flagset.Parse(fs)
 
+	err := flagset.SetFlagsFromEnvVars(fs, "SHOW")
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to assing flags from environment variables, %w", err)
+	}
+	
 	opts := &RunOptions{
 		MapProvider:     map_provider,
 		MapTileURI:      map_tile_uri,

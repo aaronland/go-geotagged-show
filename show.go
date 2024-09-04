@@ -10,13 +10,9 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/aaronland/go-flickr-api/client"
-	flickr_fs "github.com/aaronland/go-flickr-api/fs"
 	"github.com/aaronland/go-geotagged-show/static/www"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
@@ -55,58 +51,38 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 			return fmt.Errorf("Failed to parse path %s, %w", uri, err)
 		}
 
-		var fs io_fs.FS
-
-		// START OF wrap this in a NewGeotaggedFS method (aaronland/go-roster)
+		q := u.Query()
 
 		switch u.Scheme {
 		case "flickr":
 
-			q := u.Query()
 			client_uri := q.Get("client-uri")
 			root_uri := q.Get("root")
 
 			if flickr_client_uri != "" && client_uri == "{flickr-client-uri}" {
-				client_uri = flickr_client_uri
+				q.Del("client-uri")
+				q.Set("client-uri", flickr_client_uri)
 			}
 
 			if flickr_root_uri != "" && root_uri == "{flickr-root-uri}" {
-				root_uri = flickr_root_uri
+				q.Del("root")
+				q.Set("root", flickr_root_uri)
 			}
 
-			cl, err := client.NewClient(ctx, client_uri)
-
-			if err != nil {
-				return fmt.Errorf("Failed to create new Flickr API client, %w", err)
-			}
-
-			fs = flickr_fs.New(ctx, cl)
-
-			flickr_fs := &FlickrGeotaggedFS{
-				root: root_uri,
-				fs:   fs,
-			}
-
-			geotagged_fs = append(geotagged_fs, flickr_fs)
-
-		default:
-			abs_path, err := filepath.Abs(uri)
-
-			if err != nil {
-				return fmt.Errorf("Failed to derive absolute path for %s, %w", uri, err)
-			}
-
-			fs = os.DirFS(abs_path)
-
-			local_fs := &LocalGeotaggedFS{
-				fs: fs,
-			}
-
-			geotagged_fs = append(geotagged_fs, local_fs)
-
+		case "":
+			u.Scheme = "local"
 		}
 
-		// END OF wrap this in a NewGeotaggedFS method (aaronland/go-roster)
+		u.RawQuery = q.Encode()
+		uri = u.String()
+
+		new_fs, err := NewGeotaggedFS(ctx, uri)
+
+		if err != nil {
+			return fmt.Errorf("Failed to create new geotagged FS, %w", err)
+		}
+
+		geotagged_fs = append(geotagged_fs, new_fs)
 	}
 
 	opts.GeotaggedFS = geotagged_fs
@@ -121,6 +97,13 @@ func RunWithOptions(ctx context.Context, opts *RunOptions) error {
 		slog.Debug("Verbose logging enabled")
 	}
 
+	defer func(){
+
+		for _, geotagged_fs := range opts.GeotaggedFS {
+			geotagged_fs.Close()
+		}
+	}()
+	
 	exif.RegisterParsers(mknote.All...)
 
 	fc := geojson.NewFeatureCollection()
