@@ -56,7 +56,7 @@ The following filesystem URIs are supported by default. Filesystem URIs without 
 Read geotagged photos from an Azure Blob Storage container. URIs take the form of:
 
 ```
-azblob://{CONTAINER}?PARAMETERS}
+azblob://{CONTAINER}?{PARAMETERS}
 ```
 
 For details consult the `gocloud.dev/blob` [Azure Blob Storage documentation](https://gocloud.dev/howto/blob/#azure).
@@ -101,7 +101,7 @@ For details consult the [Flickr API documentation](https://www.flickr.com/servic
 Read geotagged photos from a Google Cloud Storage bucket. URIs take the form of:
  
 ```
-gc://{BUCKET}?paramters
+gc://{BUCKET}?{PARAMETERS}
 ```
 
 For details consult the `gocloud.dev/blob` [Google Cloud Storage documentation](https://gocloud.dev/howto/blob/#gcs).
