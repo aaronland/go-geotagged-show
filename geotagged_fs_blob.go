@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	io_fs "io/fs"
-	"log/slog"
 
 	_ "gocloud.dev/blob/fileblob"
-
+	_ "gocloud.dev/blob/s3blob"	
+	_ "github.com/aaronland/gocloud-blob/s3"
+	_ "gocloud.dev/blob/gcsblob"
+	_ "gocloud.dev/blob/azureblob"
+	
 	"github.com/aaronland/gocloud-blob/bucket"
 	"gocloud.dev/blob"
 )
@@ -20,11 +23,8 @@ type BlobGeotaggedFS struct {
 func init() {
 	ctx := context.Background()
 
-	slog.Info("blob")
-
 	for _, scheme := range blob.DefaultURLMux().BucketSchemes() {
 
-		slog.Info("register", "scheme", scheme)
 		err := RegisterGeotaggedFS(ctx, scheme, NewBlobGeotaggedFS)
 
 		if err != nil {

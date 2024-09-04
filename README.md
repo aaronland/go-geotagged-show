@@ -45,7 +45,88 @@ Valid options are:
     	Enable verbose (debug) logging.
 ```
 
-#### For example
+#### Filesystem URIs
+
+The `show` tool works by parsing one or more filesystem "URIs" containing geotagged photos. There are a number of filesystems supported by default (and described below) but other can be written so long as they conform to the [GeotaggedFS interface](geotagged_fs.go).
+
+##### azblob:// (Azure Blob Storage)
+
+Read geotagged photos from an Azure Blob Storage container. URIs take the form of:
+
+```
+azblob://{CONTAINER}?PARAMETERS}
+```
+
+For details consult the `gocloud.dev/blob` [Azure Blob Storage documentation](https://gocloud.dev/howto/blob/#azure).
+
+##### file:// (Local filesystem)
+
+Read geotagged photos from a folder on the local filesystem. URIs take the form of:
+
+```
+file:///{PATH}/{TO}/{FOLDER}
+```
+
+For details consult the `gocloud.dev/blob` [Google Cloud Storage documentation](https://gocloud.dev/howto/blob/#gcs).
+
+##### local:// (Local filesystem)
+
+Read geotagged photos from a folder on the local filesystem. URIs take the form of:
+
+```
+local:///{PATH}/{TO}/{FOLDER}
+```
+
+##### flickr:// (Flickr API)
+
+Read geotagged photos from the Flickr API. URIs take the form of:
+
+```
+flickr://?{PARAMETERS}
+```
+
+Valid parameters are:
+
+| Name | Value | Required | Notes |
+| --- | --- | --- | --- |
+| client-uri | string | yes | A valid [aaronland/go-flickr-api/client.Client](https://github.com/aaronland/go-flickr-api) URI |
+| root | string | yes | a string-encoded set of query parameters that can be passed to the [aaronland/go-flickr-api/fs.ReadDir](https://github.com/aaronland/go-flickr-api) method. | 
+
+For details consult the [Flickr API documentation](https://www.flickr.com/services/api/).
+
+#### gc:// (Google Cloud Storage)
+
+Read geotagged photos from a Google Cloud Storage bucket. URIs take the form of:
+ 
+```
+gc://{BUCKET}?paramters
+```
+
+For details consult the `gocloud.dev/blob` [Google Cloud Storage documentation](https://gocloud.dev/howto/blob/#gcs).
+
+#### s3:// (Amazon AWS S3 Storage)
+
+Read geotagged photos from an Amazon AWS S3 Storage bucket. URIs take the form of:
+
+```
+s3://{BUCKET}?{PARAMETERS}
+```
+
+For details consult the `gocloud.dev/blob` [S3 documentation](https://gocloud.dev/howto/blob/#s3).
+
+#### s3blob:// (Amazon AWS S3 Storage)
+
+Read geotagged photos from an Amazon AWS S3 Storage bucket. URIs take the form of:
+
+```
+s3blob://{BUCKET}?{PARAMETERS}
+```
+
+This is a thin wrapper around the default `s3://` implementation which adds support for specifying AWS credentials using a `?credentials=` parameters.
+
+For details consult the `gocloud.dev/blob` [S3 documentation](https://gocloud.dev/howto/blob/#s3) and the [aaronland/go-aws-auth Credentials documentation](https://github.com/aaronland/go-aws-auth?tab=readme-ov-file#credentials).
+
+#### Examples
 
 ![](docs/images/go-geotagged-show-basic.png)
 

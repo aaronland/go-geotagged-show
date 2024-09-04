@@ -70,7 +70,6 @@ func RunWithFlagSet(ctx context.Context, fs *flag.FlagSet) error {
 			}
 
 		case "":
-
 			u.Scheme = "local"
 		}
 
