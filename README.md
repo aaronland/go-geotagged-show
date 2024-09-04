@@ -49,6 +49,8 @@ Valid options are:
 
 The `show` tool works by parsing one or more filesystem "URIs" containing geotagged photos. There are a number of filesystems supported by default (and described below) but other can be written so long as they conform to the [GeotaggedFS interface](geotagged_fs.go).
 
+The following filesystem URIs are supported by default. Filesystem URIs without a known, registered scheme are assumed to be `local://` (a folder on the local filesystem).
+
 ##### azblob:// (Azure Blob Storage)
 
 Read geotagged photos from an Azure Blob Storage container. URIs take the form of:
